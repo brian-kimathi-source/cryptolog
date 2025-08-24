@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login / Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(120deg, #2980b9, #8e44ad);
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 320px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      transition: all 0.4s ease;
+    }
+    h2 { margin-bottom: 1rem; }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    button:hover { background: #1e5f85; }
+    .toggle {
+      margin-top: 12px;
+      cursor: pointer;
+      color: #8e44ad;
+      text-decoration: underline;
+    }
+    .error {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 8px;
+      min-height: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="authBox">
+    <h2 id="formTitle">Login</h2>
+    <form id="authForm">
+      <input type="text" id="phone" placeholder="Phone (optional)">
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button type="submit">Login</button>
+    </form>
+    <div class="error" id="errorMsg"></div>
+    <div class="toggle" id="toggleMode">Don’t have an account? Register</div>
+  </div>
+
+  <script>
+    let mode = "login"; // login or register
+    const form = document.getElementById("authForm");
+    const title = document.getElementById("formTitle");
+    const toggle = document.getElementById("toggleMode");
+    const errorMsg = document.getElementById("errorMsg");
+    const phoneInput = document.getElementById("phone");
+    const emailInput = document.getElementById("email");
+    const passInput = document.getElementById("password");
+
+    toggle.onclick = () => {
+      mode = mode === "login" ? "register" : "login";
+      title.innerText = mode === "login" ? "Login" : "Register";
+      form.querySelector("button").innerText = mode === "login" ? "Login" : "Register";
+      toggle.innerText = mode === "login" 
+        ? "Don’t have an account? Register" 
+        : "Already have an account? Login";
+      errorMsg.innerText = "";
+    };
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      errorMsg.innerText = "";
+
+      const phone = phoneInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passInput.value.trim();
+
+      if (!email && !phone) {
+        errorMsg.innerText = "Email or phone required";
+        return;
+      }
+      if (!password) {
+        errorMsg.innerText = "Password required";
+        return;
+      }
+
+      try {
+        const res = await fetch(`/${mode}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+        if (mode === "login") {
+          window.location.href = "/dashboard.html";
+        } else {
+          alert("Registration successful! Please login.");
+          toggle.onclick(); // switch back to login
+        }
+      } catch (err) {
+        errorMsg.innerText = err.message;
+      }
+    };
+  </script>
+</body>
+</html>
+
+
